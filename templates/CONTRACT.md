@@ -26,8 +26,13 @@ A file needed by two pieces is a contract change: ask the architect, do not edit
 ## Merge order
 1. <piece A> — <why first>
 2. <piece B> — <depends on A's interface>
-3. Integrator session merges into one branch `<integration-branch>`, then the Sonnet tester runs the full gates.
+3. Integrator session (spawned together with the pieces) waits for every pushed report, merges into one branch `<integration-branch>`, then the Sonnet tester runs the full gates.
+
+MAIN: <pre-approved | ask>
+<!-- pre-approved = after green gates the integrator merges and pushes to main itself,
+     verifies the deploy and cleans up. Never covers money, data deletion or production
+     data by hand; red gates or a contract violation turn it back into "ask". -->
 
 ## Rules for every session
 - Own branch/worktree; commit to it; never merge to the main branch; never deploy.
-- End with `<reports folder>/<task>/<piece>-REPORT.md` (`templates/REPORT.md`).
+- End with `<reports folder>/<task>/<piece>-REPORT.md` (`templates/REPORT.md`), then PUSH the branch yourself — the pushed report is the "done" signal for the integrator.

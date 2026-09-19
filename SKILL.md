@@ -156,7 +156,9 @@ ask for conclusions in ≤ 1 page, with `file:line` references, no file dumps.
 ## Step 3 — the plan shown to the user (in the user's language, compact)
 
 For each piece: what is done · files/contour · executor model + effort · how it is verified ·
-dependencies. Then total: how many agents/sessions, what runs in parallel, who integrates.
+dependencies. Then total: how many agents/sessions, what runs in parallel, who integrates
+(with separate sessions the integrator session is always a line of the plan, plus the
+main-merge question from Step 5.5).
 **Wait for the user's confirmation before launching anything.**
 
 ## Model choice
@@ -215,11 +217,31 @@ must have disjoint files; otherwise `isolation: "worktree"`.
    architect's effort, so `set_session_effort` is mandatory for every session, never
    skipped, and `get_session` must show the intended effort before the brief is sent. Show
    model + effort per piece in the plan (e.g. "Sonnet 5 / high").
-3. Each session ends by committing to its branch and writing
-   `Research/architect/<task>/<piece>-REPORT.md` (`templates/REPORT.md`). It does NOT merge to
-   main and does NOT deploy.
-4. Integrator session (Fable/Opus, fresh context): read the reports and diffs, merge
-   into one branch, have a Sonnet tester run the full gates (Step 7), then ask the user about main — ONE merge, one deploy.
+3. Each session ends by committing to its branch, writing
+   `Research/architect/<task>/<piece>-REPORT.md` (`templates/REPORT.md`) and **PUSHING its
+   branch to the remote itself** — the pushed report is the "done" signal; the user never
+   pushes by hand. Its last chat line to the user: "<piece> done, branch pushed, the
+   integrator will pick it up". It does NOT merge to main and does NOT deploy.
+4. **Whenever separate sessions are spawned, ALWAYS spawn an integrator session in the SAME
+   batch** (Opus 5 / high, fresh context) — never leave it for the user to open later.
+   Its brief lists every piece's branch + report path, and its first action is ONE
+   background wait command that polls the remote every 2–3 min until all reports exist
+   (no tokens spent while waiting). Before waiting it tells the user in one line what it
+   waits for and how often it checks; after each poll that changes state it says which
+   pieces are in (`2/4: K1, K3`) — a silent integrator looks hung. A piece late by > 2× its
+   planned duration → name it to the user instead of waiting forever.
+   Then, with no further prompting: review each diff against the contract → merge pieces
+   into one integration branch in the contract's order → Sonnet tester runs the full gates
+   (Step 7) → push the integration branch.
+5. **Main.** The architect asks ONCE, in the plan (Step 3): "after green gates, may the
+   integrator merge into main itself — yes/no?" and writes the answer into the contract as
+   `MAIN: pre-approved` or `MAIN: ask`. `pre-approved` → the integrator merges and pushes
+   to main itself after green gates, verifies the deploy (project receipt/health checks)
+   and cleans up branches and worktrees — no manual step is left to the user.
+   `ask` → it stops with a one-screen summary and one question. Pre-approval NEVER covers
+   money, data deletion, production data by hand, or anything the project's CLAUDE.md gates
+   separately; red gates or a contract violation cancel it — the integrator asks.
+   ONE merge, one deploy.
 
 Sequential chain: same, but one session at a time; each ends with `HANDOFF.md`
 (`templates/HANDOFF.md`: state, decisions made, next step, traps found), the next one starts
