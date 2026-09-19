@@ -51,7 +51,8 @@ language the user converses in. Keep it as short as below; do not add to it.
 > **1. Splits the roles between models.** The strongest of your models only thinks: it
 > analyzes the task, writes the plan, sets the assignments and checks the result by the diff.
 > Cheaper models do the routine work, and a separate executor always runs the tests before the
-> merge. For example: Fable 5.1 plans, Opus 5 takes the hard parts, Sonnet 5 does the rest.
+> merge. For example: "Fable 5.1 Medium" plans, "Opus 5 High" takes the hard parts,
+> "Sonnet 5 High" does the rest.
 > Your set of models may differ; change it in `SKILL.md`.
 >
 > **2. Splits big tasks into sessions.** It sizes the task and proposes in the plan: keep it
